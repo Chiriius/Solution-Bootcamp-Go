@@ -2,7 +2,8 @@ package mysql
 
 import (
 	"bootcamp_api/api/entities"
-	"bootcamp_api/api/utils/errors"
+	errorss "bootcamp_api/api/utils/errors"
+
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -25,9 +26,10 @@ func NewMySQLUserRepository(db *sqlx.DB) *MySqlUserRepository {
 func (repo *MySqlUserRepository) GetUserById(id string) (entities.User, error) {
 	var user entities.User
 	err := repo.db.Get(&user, "SELECT * FROM users WHERE id=?", id)
-	if err == sql.ErrNoRows {
-		return user, errors.ErrorUserNotFound //Mejorar esta parte de logica de condicion.
-	} else if err != nil {
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errorss.ErrorUserNotFound //Logica cambiada
+		}
 		return user, err
 	}
 	return user, nil
@@ -36,5 +38,6 @@ func (repo *MySqlUserRepository) GetUserById(id string) (entities.User, error) {
 func (repo *MySqlUserRepository) AddUser(user entities.User) error {
 	query := "INSERT INTO users (id, password, age, information, parents, email , name ) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.db.Exec(query, user.ID, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name)
+
 	return err
-} //Devolver El identificador
+} //Ya devuelve el identificador en el endpoint

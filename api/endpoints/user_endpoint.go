@@ -3,8 +3,9 @@ package endpoints
 import (
 	"bootcamp_api/api/entities"
 	"bootcamp_api/api/services"
+	errorss "bootcamp_api/api/utils/errors"
 	"context"
-	"errors"
+	"log"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -35,13 +36,18 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 		var req GetUserRequest
 		var ok bool = false
 		if req, ok = request.(GetUserRequest); !ok {
-			return nil, errors.New("sds") //
+			log.Printf(errorss.ErrorInterfaceDifType.Message)
+			return nil, errorss.ErrorInterfaceDifType
+
 		}
 		user, err := s.GetUser(req.ID)
 		if err != nil {
+			log.Println(err.Error())
 			return GetUserResponse{User: user, Err: err.Error()}, nil
 		}
+		log.Printf("Obtained user: %s sucessfully", req.ID)
 		return GetUserResponse{User: user}, nil
+
 	}
 }
 
@@ -67,7 +73,8 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 		var req CreateUserRequest
 		var ok bool = false
 		if req, ok = request.(CreateUserRequest); !ok {
-			return nil, errors.New("ss")
+			log.Println(errorss.ErrorInterfaceDifType)
+			return nil, errorss.ErrorInterfaceDifType
 		}
 		user := entities.User{
 			Password:    req.Password,
@@ -79,8 +86,10 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 		}
 		serviceUser, err := s.AddUser(user)
 		if err != nil {
+			log.Println(err)
 			return CreateUserResponse{Err: err.Error()}, nil
 		}
+		log.Printf("Created user with id:%s sucessfully ", serviceUser.ID)
 		return CreateUserResponse{Id: serviceUser.ID}, nil
 
 	}
