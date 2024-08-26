@@ -36,6 +36,7 @@ func decodeGerUserRequest(_ context.Context, r *http.Request) (interface{}, erro
 }
 
 func encodeGetUserResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+	
 	//Agregar codigo de respuesta
 	//Agregar validaciones
 	return json.NewEncoder(w).Encode(response)

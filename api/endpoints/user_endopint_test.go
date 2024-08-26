@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"bootcamp_api/api/entities"
 	"bootcamp_api/api/models"
 	"bootcamp_api/api/services"
 	"context"
@@ -33,7 +34,7 @@ func TestGetUser(t *testing.T) {
 			configureMock: func(m *serviceMock, mockResponse models.User) {
 				m.On("GetUser", mock.Anything).Return(mockResponse, nil)
 			},
-			expectedOutput: GetUserResponse{User: models.User{
+			expectedOutput: GetUserResponse{User: entities.User{
 				ID: "3",
 			}},
 			expetedError:    nil,

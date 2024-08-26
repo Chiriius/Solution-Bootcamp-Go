@@ -1,7 +1,7 @@
 package endpoints
 
 import (
-	"bootcamp_api/api/models"
+	"bootcamp_api/api/entities"
 	"bootcamp_api/api/services"
 	"context"
 	"errors"
@@ -14,7 +14,7 @@ type GetUserRequest struct {
 }
 
 type GetUserResponse struct {
-	User models.User
+	User entities.User
 	Err  string `json:"error,omitempty"`
 }
 
@@ -45,9 +45,9 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 	}
 }
 
-//ESTUDIAR CLOSURE EN GO
+// ESTUDIAR CLOSURE EN GO
 // CASTING
-//Crear carpeta entity con la entity user 
+// Crear carpeta entity con la entity user
 type CreateUserRequest struct {
 	Password    string
 	Age         string
@@ -58,6 +58,7 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
+	Id  string `json:"id,omitempty"`
 	Err string `json:"error,omitempty"`
 }
 
@@ -65,10 +66,10 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		var req CreateUserRequest
 		var ok bool = false
-		if req, ok = request.(CreateUserRequest); !ok{
-			return nil,errors.New("ss")
+		if req, ok = request.(CreateUserRequest); !ok {
+			return nil, errors.New("ss")
 		}
-		user := models.User{
+		user := entities.User{
 			Password:    req.Password,
 			Age:         req.Age,
 			Information: req.Information,
@@ -76,11 +77,11 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 			Email:       req.Email,
 			Name:        req.Name,
 		}
-		err := s.AddUser(user)
+		serviceUser, err := s.AddUser(user)
 		if err != nil {
 			return CreateUserResponse{Err: err.Error()}, nil
 		}
-		return CreateUserResponse{}, nil
+		return CreateUserResponse{Id: serviceUser.ID}, nil
 
 	}
 
