@@ -38,12 +38,11 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 		if req, ok = request.(GetUserRequest); !ok {
 			log.Printf(errorss.ErrorInterfaceDifType.Message)
 			return nil, errorss.ErrorInterfaceDifType
-
 		}
 		user, err := s.GetUser(req.ID)
 		if err != nil {
 			log.Println(err.Error())
-			return GetUserResponse{User: user, Err: err.Error()}, nil
+			return GetUserResponse{}, err
 		}
 		log.Printf("Obtained user: %s sucessfully", req.ID)
 		return GetUserResponse{User: user}, nil
@@ -51,9 +50,6 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 	}
 }
 
-// ESTUDIAR CLOSURE EN GO
-// CASTING
-// Crear carpeta entity con la entity user
 type CreateUserRequest struct {
 	Password    string
 	Age         string

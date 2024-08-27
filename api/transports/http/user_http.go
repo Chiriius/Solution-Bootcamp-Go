@@ -4,6 +4,7 @@ import (
 	"bootcamp_api/api/endpoints"
 	"context"
 	"encoding/json"
+	
 	"net/http"
 
 	httpTransport "github.com/go-kit/kit/transport/http"
@@ -17,11 +18,10 @@ func NewHTTPHandler(endpointss endpoints.Endpoints) http.Handler {
 		decodeGerUserRequest,
 		encodeGetUserResponse,
 	))
-	m.Handle("/user/create",httpTransport.NewServer(
+	m.Handle("/user/create", httpTransport.NewServer(
 		endpointss.AddUser,
 		decodeAddUserRequest,
 		encodeGetUserResponse,
-
 	))
 	return m
 }
@@ -36,7 +36,11 @@ func decodeGerUserRequest(_ context.Context, r *http.Request) (interface{}, erro
 }
 
 func encodeGetUserResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	
+
+	// var req endpoints.GetUserResponse
+	// if req != response {
+	// 	return errors.New("Diferent type")
+	// }
 	//Agregar codigo de respuesta
 	//Agregar validaciones
 	return json.NewEncoder(w).Encode(response)
@@ -44,7 +48,7 @@ func encodeGetUserResponse(_ context.Context, w http.ResponseWriter, response in
 }
 
 func decodeAddUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
-    var req endpoints.CreateUserRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
-    return req, err
+	var req endpoints.CreateUserRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
 }

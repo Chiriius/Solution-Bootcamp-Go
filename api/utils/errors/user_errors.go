@@ -19,6 +19,6 @@ var ErrorInterfaceDifType = &Error{
 }
 
 var ErrorUserNotFound = &Error{
-	Code:    5001,
+	Code:    404,
 	Message: "User not found",
 }
