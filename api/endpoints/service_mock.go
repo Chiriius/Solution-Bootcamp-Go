@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"bootcamp_api/api/entities"
+	"bootcamp_api/api/services"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -16,8 +17,12 @@ func (m *serviceMock) GetUser(id string) (entities.User, error) {
 
 }
 
-func (m *serviceMock) AddUser(user entities.User) (entities.User,error) { // reemplazar el model.user duplicando la struct
-
+func (m *serviceMock) AddUser(user entities.User) (entities.User, error) { // reemplazar el model.user duplicando la struct
 	r := m.Called(user)
-	return r.Get(0).(entities.User) ,r.Error(1)
+	return r.Get(0).(entities.User), r.Error(1)
+}
+
+func (m *serviceMock) MakeServerEndpoints(s services.UserService) Endpoints {
+	r:= m.Called(s)
+	return r.Get(0).(Endpoints)
 }

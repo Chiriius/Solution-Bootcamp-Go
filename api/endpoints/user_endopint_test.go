@@ -50,7 +50,7 @@ func TestGetUser(t *testing.T) {
 			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
 				m.On("GetUser", mock.Anything).Return(mockResponse, mockError)
 			},
-			expectedOutput: GetUserResponse{},
+			expectedOutput:  GetUserResponse{},
 			mockError:       errors.New("Service error"),
 			expetedError:    errors.New("Service error"),
 			endpointRequest: GetUserRequest{ID: "3"},
@@ -65,8 +65,6 @@ func TestGetUser(t *testing.T) {
 				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
 			}
 			ctx := context.TODO()
-
-			//Nothing to prepare in this case
 
 			// Act
 			result, err := tt.endpoint(tt.mock)(ctx, tt.endpointRequest)
@@ -86,7 +84,8 @@ func TestAddUser(t *testing.T) {
 		endpoint        func(services.UserService) endpoint.Endpoint
 		service         services.UserService
 		mock            *serviceMock
-		configureMock   func(*serviceMock, entities.User)
+		mockError       error
+		configureMock   func(*serviceMock, entities.User, error)
 		endpointRequest interface{}
 		mockResponse    entities.User
 		expectedOutput  CreateUserResponse
@@ -98,14 +97,40 @@ func TestAddUser(t *testing.T) {
 			mockResponse: entities.User{
 				ID: "5",
 			},
-			configureMock: func(m *serviceMock, mockResponse entities.User) {
-				m.On("AddUser", mock.Anything).Return(mockResponse, nil)
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
 			},
 			expectedOutput: CreateUserResponse{
 				Id: "5",
 			},
 			expectedError:   nil,
 			endpointRequest: CreateUserRequest{Password: "12345678", Age: "20", Information: "add", Parents: "idk", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
+		},
+		{
+			testName: "test add user with error",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID: "5",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  CreateUserResponse{},
+			mockError:       errors.New("Server Error"),
+			expectedError:   errors.New("Server Error"),
+			endpointRequest: CreateUserRequest{Password: "12345678", Age: "20", Information: "add", Parents: "idk", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
+		},
+		{
+			testName:     "test add user with missing fields",
+			mock:         &serviceMock{},
+			mockResponse: entities.User{},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  CreateUserResponse{},
+			mockError:       errors.New("some validation error"),
+			expectedError:   errors.New("some validation error"),
+			endpointRequest: CreateUserRequest{Password: "", Age: "", Information: "", Parents: "", Email: "", Name: ""},
 		},
 	}
 
@@ -115,7 +140,7 @@ func TestAddUser(t *testing.T) {
 			// Prepare
 			tt.endpoint = MakeAddUserEndpoint
 			if tt.configureMock != nil {
-				tt.configureMock(tt.mock, tt.mockResponse)
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
 			}
 			ctx := context.TODO()
 
@@ -124,6 +149,46 @@ func TestAddUser(t *testing.T) {
 
 			// Assert
 			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedOutput, result)
+		})
+	}
+}
+
+func TestMakeServerEndpoints(t *testing.T) {
+
+	testScenarios := []struct {
+		testName       string
+		service        services.UserService
+		mock           *serviceMock
+		mockResponse   Endpoints
+		configureMock  func(*serviceMock, Endpoints)
+		expectedOutput Endpoints
+	}{
+		{
+			testName: "test MakeServerEndpoints",
+			mock:     &serviceMock{},
+			configureMock: func(m *serviceMock, mockResponse Endpoints) {
+				m.On("GetUser", mock.Anything).Return(mockResponse)
+			},
+			expectedOutput: Endpoints{
+				GetUser: MakeGetUserEndpoint(&serviceMock{}),
+				AddUser: MakeAddUserEndpoint(&serviceMock{}),
+			},
+		},
+	}
+
+	for _, tt := range testScenarios {
+
+		// Prepare
+		t.Run(tt.testName, func(t *testing.T) {
+			if tt.configureMock != nil {
+				tt.configureMock(tt.mock, tt.mockResponse)
+			}
+
+			// Act
+			result := MakeServerEndpoints(tt.mock)
+
+			// Assert
 			assert.Equal(t, tt.expectedOutput, result)
 		})
 	}

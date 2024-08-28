@@ -83,7 +83,7 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 		serviceUser, err := s.AddUser(user)
 		if err != nil {
 			log.Println(err)
-			return CreateUserResponse{Err: err.Error()}, nil
+			return CreateUserResponse{}, err
 		}
 		log.Printf("Created user with id:%s sucessfully ", serviceUser.ID)
 		return CreateUserResponse{Id: serviceUser.ID}, nil
