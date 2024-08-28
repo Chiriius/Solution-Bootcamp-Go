@@ -16,12 +16,17 @@ func NewHTTPHandler(endpointss endpoints.Endpoints) http.Handler {
 	m.Handle("/user", httpTransport.NewServer(
 		endpointss.GetUser,
 		decodeGerUserRequest,
-		encodeGetUserResponse,
+		encodeGenericResponse,
 	))
 	m.Handle("/user/create", httpTransport.NewServer(
 		endpointss.AddUser,
 		decodeAddUserRequest,
-		encodeGetUserResponse,
+		encodeGenericResponse,
+	))
+	m.Handle("/user/edit", httpTransport.NewServer(
+		endpointss.ModifyUser,
+		decodeModifyRequest,
+		encodeGenericResponse,
 	))
 	return m
 }
@@ -35,7 +40,12 @@ func decodeGerUserRequest(_ context.Context, r *http.Request) (interface{}, erro
 	return req, nil
 }
 
-func encodeGetUserResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+func decodeModifyRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.ModifyUserRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+func encodeGenericResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 
 	// var req endpoints.GetUserResponse
 	// if req != response {

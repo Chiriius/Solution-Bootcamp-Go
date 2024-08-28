@@ -13,6 +13,8 @@ import (
 type UserRepository interface {
 	GetUserById(id string) (entities.User, error)
 	AddUser(user entities.User) error
+	ModifyUserById(user entities.User)error
+
 }
 
 type MySqlUserRepository struct {
@@ -41,3 +43,10 @@ func (repo *MySqlUserRepository) AddUser(user entities.User) error {
 
 	return err
 } //Ya devuelve el identificador en el endpoint
+
+func (repo *MySqlUserRepository) ModifyUserById(user entities.User) error {
+	query := (`UPDATE users SET password = ?, age = ?, information = ?, parents = ?, email = ?, name = ? WHERE id = ?`)
+	_, err := repo.db.Exec(query, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name, user.ID)
+
+	return err
+}

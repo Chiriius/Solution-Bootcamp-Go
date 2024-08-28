@@ -26,3 +26,7 @@ func (m *serviceMock) MakeServerEndpoints(s services.UserService) Endpoints {
 	r:= m.Called(s)
 	return r.Get(0).(Endpoints)
 }
+func (m *serviceMock) ModifyUser(user entities.User) (entities.User, error) {
+	r:= m.Called(user)
+	return r.Get(0).(entities.User),r.Error(1)
+}

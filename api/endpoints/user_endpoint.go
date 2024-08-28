@@ -5,7 +5,9 @@ import (
 	"bootcamp_api/api/services"
 	errorss "bootcamp_api/api/utils/errors"
 	"context"
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -19,15 +21,46 @@ type GetUserResponse struct {
 	Err  string `json:"error,omitempty"`
 }
 
+type CreateUserRequest struct {
+	Password    string
+	Age         string
+	Information string
+	Parents     string
+	Email       string
+	Name        string
+}
+
+type CreateUserResponse struct {
+	Id  string `json:"id,omitempty"`
+	Err string `json:"error,omitempty"`
+}
+
+type ModifyUserRequest struct {
+	Id          string
+	Password    string
+	Age         string
+	Information string
+	Parents     string
+	Email       string
+	Name        string
+}
+
+type ModifyUserResponse struct {
+	Id  string `json:"id,omitempty"`
+	Err string `json:"error,omitempty"`
+}
+
 type Endpoints struct {
-	GetUser endpoint.Endpoint
-	AddUser endpoint.Endpoint
+	GetUser    endpoint.Endpoint
+	AddUser    endpoint.Endpoint
+	ModifyUser endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s services.UserService) Endpoints {
 	return Endpoints{
-		GetUser: MakeGetUserEndpoint(s),
-		AddUser: MakeAddUserEndpoint(s),
+		GetUser:    MakeGetUserEndpoint(s),
+		AddUser:    MakeAddUserEndpoint(s),
+		ModifyUser: MakeModifyUserEndpoint(s),
 	}
 }
 
@@ -48,20 +81,6 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 		return GetUserResponse{User: user}, nil
 
 	}
-}
-
-type CreateUserRequest struct {
-	Password    string
-	Age         string
-	Information string
-	Parents     string
-	Email       string
-	Name        string
-}
-
-type CreateUserResponse struct {
-	Id  string `json:"id,omitempty"`
-	Err string `json:"error,omitempty"`
 }
 
 func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
@@ -87,7 +106,54 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 		}
 		log.Printf("Created user with id:%s sucessfully ", serviceUser.ID)
 		return CreateUserResponse{Id: serviceUser.ID}, nil
+	}
+}
+
+func MakeModifyUserEndpoint(s services.UserService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		var req ModifyUserRequest
+		var ok bool
+		if req, ok = request.(ModifyUserRequest); !ok {
+			log.Println(errorss.ErrorInterfaceDifType)
+			return nil, errorss.ErrorInterfaceDifType
+		}
+		userG, err := s.GetUser(req.Id)
+		fmt.Println(userG)
+		if err != nil {
+			log.Println(err.Error())
+			return ModifyUserResponse{}, err
+		}
+		user := entities.User{
+			ID:          req.Id,
+			Password:    req.Password,
+			Age:         req.Age,
+			Information: req.Information,
+			Parents:     req.Parents,
+			Email:       req.Email,
+			Name:        req.Name,
+		}
+		switch {
+		case strings.TrimSpace(user.Password) == "":
+			user.Password = userG.Password
+		case strings.TrimSpace(user.Age) == "":
+			user.Age = userG.Age
+		case strings.TrimSpace(user.Information) == "":
+			user.Information = userG.Information
+		case strings.TrimSpace(user.Parents) == "":
+			user.Parents = userG.Parents
+		case strings.TrimSpace(user.Email) == "":
+			user.Email = userG.Email
+		case strings.TrimSpace(user.Name) == "":
+			user.Name = userG.Name
+		}
+		fmt.Println(user)
+		serviceUser, err := s.ModifyUser(user)
+		if err != nil {
+			log.Println(err)
+			return ModifyUserResponse{}, err
+		}
+		log.Printf("Modified user with id:%s sucessfully ", serviceUser.ID)
+		return ModifyUserResponse{Id: serviceUser.ID}, nil
 
 	}
-
 }
