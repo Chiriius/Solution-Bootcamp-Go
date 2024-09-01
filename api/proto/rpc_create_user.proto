@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package api;
+
+
+option go_package= "bootcamp_api";
+
+message CreateUserRequest {
+    string password = 1;
+    string age = 2;
+    string information = 3;
+    string parents = 4;
+    string email = 5;
+    string name = 6;
+  }
+  
+  message CreateUserResponse {
+    string id = 1;
+    string error = 2;
+  }
+  

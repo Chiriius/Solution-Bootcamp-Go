@@ -165,7 +165,7 @@ func TestAddUser(t *testing.T) {
 	}
 }
 
-func TestModifyUser(t *testing.T) {
+func TestUpdateUser(t *testing.T) {
 
 	testScenarios := []struct {
 		testName        string
@@ -187,7 +187,7 @@ func TestModifyUser(t *testing.T) {
 			},
 			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
 				m.On("GetUser", mock.Anything).Return(mockResponse, mockError)
-				m.On("ModifyUser", mock.Anything).Return(mockResponse, mockError)
+				m.On("UpdateUser", mock.Anything).Return(mockResponse, mockError)
 			},
 			expectedOutput: ModifyUserResponse{
 				Id: "222",
@@ -199,9 +199,9 @@ func TestModifyUser(t *testing.T) {
 
 	for _, tt := range testScenarios {
 		t.Run(tt.testName, func(t *testing.T) {
-			
+
 			// Prepare
-			tt.endpoint = MakeModifyUserEndpoint
+			tt.endpoint = MakeUpdateUserEndpoint
 			if tt.configureMock != nil {
 				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
 			}
@@ -219,23 +219,19 @@ func TestModifyUser(t *testing.T) {
 
 func TestMakeServerEndpoints(t *testing.T) {
 
+	sm := &serviceMock{}
 	testScenarios := []struct {
 		testName       string
-		service        services.UserService
 		mock           *serviceMock
-		mockResponse   Endpoints
-		configureMock  func(*serviceMock, Endpoints)
 		expectedOutput Endpoints
 	}{
 		{
 			testName: "test MakeServerEndpoints",
-			mock:     &serviceMock{},
-			configureMock: func(m *serviceMock, mockResponse Endpoints) {
-				m.On("ModifyUser", mock.Anything).Return(mockResponse)
-			},
+			mock:     sm,
 			expectedOutput: Endpoints{
-				GetUser: MakeGetUserEndpoint(&serviceMock{}),
-				AddUser: MakeAddUserEndpoint(&serviceMock{}),
+				GetUser:    MakeGetUserEndpoint(sm),
+				AddUser:    MakeAddUserEndpoint(sm),
+				UpdateUser: MakeUpdateUserEndpoint(sm),
 			},
 		},
 	}
@@ -244,56 +240,14 @@ func TestMakeServerEndpoints(t *testing.T) {
 
 		// Prepare
 		t.Run(tt.testName, func(t *testing.T) {
-			if tt.configureMock != nil {
-				tt.configureMock(tt.mock, tt.mockResponse)
-			}
 
 			// Act
 			result := MakeServerEndpoints(tt.mock)
 
 			// Assert
-			assert.Equal(t, tt.expectedOutput, result)
+			assert.NotNil(t, result.AddUser)
+			assert.NotNil(t, result.GetUser)
+			assert.NotNil(t, result.UpdateUser)
 		})
 	}
 }
-
-// func TestMakeServerEndpoints(t *testing.T) {
-
-// 	testScenarios := []struct {
-// 		testName       string
-// 		service        services.UserService
-// 		mock           *serviceMock
-// 		configureMock  func(*serviceMock)
-// 		expectedOutput Endpoints
-// 	}{
-// 		{
-// 			testName: "test MakeServerEndpoints",
-// 			mock:     &serviceMock{},
-// 			configureMock: func(m *serviceMock) {
-// 				m.On("GetUser", mock.Anything).Return(entities.User{ID: "3"}, nil)
-// 				m.On("AddUser", mock.Anything).Return(entities.User{ID: "5"}, nil)
-// 			},
-// 			expectedOutput: Endpoints{
-// 				GetUser: MakeGetUserEndpoint(&serviceMock{}),
-// 				AddUser: MakeAddUserEndpoint(&serviceMock{}),
-// 			},
-// 		},
-// 	}
-
-// 	for _, tt := range testScenarios {
-
-// 		// Prepare
-// 		t.Run(tt.testName, func(t *testing.T) {
-// 			if tt.configureMock != nil {
-// 				tt.configureMock(tt.mock)
-// 			}
-
-// 			// Act
-// 			result := MakeServerEndpoints(tt.mock)
-
-// 			// Assert
-// 			assert.NotNil(t, result.GetUser)
-// 			assert.NotNil(t, result.AddUser)
-// 		})
-// 	}
-// }

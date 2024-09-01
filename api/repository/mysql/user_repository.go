@@ -11,10 +11,9 @@ import (
 )
 
 type UserRepository interface {
-	GetUserById(id string) (entities.User, error)
-	AddUser(user entities.User) error
-	ModifyUserById(user entities.User)error
-
+	GetUser(id string) (entities.User, error)
+	AddUser(user entities.User) (entities.User, error)
+	UpdateUser(user entities.User) (entities.User, error)
 }
 
 type MySqlUserRepository struct {
@@ -25,7 +24,7 @@ func NewMySQLUserRepository(db *sqlx.DB) *MySqlUserRepository {
 	return &MySqlUserRepository{db: db}
 }
 
-func (repo *MySqlUserRepository) GetUserById(id string) (entities.User, error) {
+func (repo *MySqlUserRepository) GetUser(id string) (entities.User, error) {
 	var user entities.User
 	err := repo.db.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
@@ -37,16 +36,16 @@ func (repo *MySqlUserRepository) GetUserById(id string) (entities.User, error) {
 	return user, nil
 }
 
-func (repo *MySqlUserRepository) AddUser(user entities.User) error {
+func (repo *MySqlUserRepository) AddUser(user entities.User) (entities.User, error) {
 	query := "INSERT INTO users (id, password, age, information, parents, email , name ) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.db.Exec(query, user.ID, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name)
 
-	return err
+	return user, err
 } //Ya devuelve el identificador en el endpoint
 
-func (repo *MySqlUserRepository) ModifyUserById(user entities.User) error {
+func (repo *MySqlUserRepository) UpdateUser(user entities.User) (entities.User, error) {
 	query := (`UPDATE users SET password = ?, age = ?, information = ?, parents = ?, email = ?, name = ? WHERE id = ?`)
 	_, err := repo.db.Exec(query, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name, user.ID)
 
-	return err
+	return user, err
 }

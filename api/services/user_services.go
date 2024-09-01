@@ -9,8 +9,8 @@ import (
 
 type UserService interface {
 	GetUser(id string) (entities.User, error)
-	AddUser(user entities.User) (entities.User,error)
-	ModifyUser(user entities.User) (entities.User,error)
+	AddUser(user entities.User) (entities.User, error)
+	UpdateUser(user entities.User) (entities.User, error)
 }
 
 type userService struct {
@@ -22,17 +22,16 @@ func NewUserService(repo mysql.UserRepository) *userService {
 }
 
 func (s *userService) GetUser(id string) (entities.User, error) { // reemplazar el model.user duplicando la struct
-	return s.repository.GetUserById(id)
-
+	return s.repository.GetUser(id)
 }
 
 func (s *userService) AddUser(user entities.User) (entities.User, error) { // reemplazar el model.user duplicando la struct
 
 	user.ID = uuid.NewString()
-	return user, s.repository.AddUser(user)
+	return s.repository.AddUser(user)
 }
 
-func (s *userService) ModifyUser(user entities.User) (entities.User, error){
+func (s *userService) UpdateUser(user entities.User) (entities.User, error) {
 
-	return user, s.repository.ModifyUserById(user)
+	return s.repository.UpdateUser(user)
 }

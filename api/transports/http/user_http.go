@@ -4,7 +4,7 @@ import (
 	"bootcamp_api/api/endpoints"
 	"context"
 	"encoding/json"
-	
+
 	"net/http"
 
 	httpTransport "github.com/go-kit/kit/transport/http"
@@ -24,7 +24,7 @@ func NewHTTPHandler(endpointss endpoints.Endpoints) http.Handler {
 		encodeGenericResponse,
 	))
 	m.Handle("/user/edit", httpTransport.NewServer(
-		endpointss.ModifyUser,
+		endpointss.UpdateUser,
 		decodeModifyRequest,
 		encodeGenericResponse,
 	))

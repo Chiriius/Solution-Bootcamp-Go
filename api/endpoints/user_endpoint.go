@@ -53,14 +53,14 @@ type ModifyUserResponse struct {
 type Endpoints struct {
 	GetUser    endpoint.Endpoint
 	AddUser    endpoint.Endpoint
-	ModifyUser endpoint.Endpoint
+	UpdateUser endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s services.UserService) Endpoints {
 	return Endpoints{
 		GetUser:    MakeGetUserEndpoint(s),
 		AddUser:    MakeAddUserEndpoint(s),
-		ModifyUser: MakeModifyUserEndpoint(s),
+		UpdateUser: MakeUpdateUserEndpoint(s),
 	}
 }
 
@@ -109,7 +109,7 @@ func MakeAddUserEndpoint(s services.UserService) endpoint.Endpoint {
 	}
 }
 
-func MakeModifyUserEndpoint(s services.UserService) endpoint.Endpoint {
+func MakeUpdateUserEndpoint(s services.UserService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		var req ModifyUserRequest
 		var ok bool
@@ -147,7 +147,7 @@ func MakeModifyUserEndpoint(s services.UserService) endpoint.Endpoint {
 			user.Name = userG.Name
 		}
 		fmt.Println(user)
-		serviceUser, err := s.ModifyUser(user)
+		serviceUser, err := s.UpdateUser(user)
 		if err != nil {
 			log.Println(err)
 			return ModifyUserResponse{}, err
