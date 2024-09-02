@@ -3,6 +3,7 @@ package mysql
 import (
 	"bootcamp_api/api/entities"
 	errorss "bootcamp_api/api/utils/errors"
+	"errors"
 
 	"database/sql"
 
@@ -40,12 +41,25 @@ func (repo *MySqlUserRepository) AddUser(user entities.User) (entities.User, err
 	query := "INSERT INTO users (id, password, age, information, parents, email , name ) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.db.Exec(query, user.ID, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name)
 
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errors.New("Codigo:505 Message:Server error") //Logica cambiada
+		}
+		return user, err
+	}
 	return user, err
 } //Ya devuelve el identificador en el endpoint
 
 func (repo *MySqlUserRepository) UpdateUser(user entities.User) (entities.User, error) {
 	query := (`UPDATE users SET password = ?, age = ?, information = ?, parents = ?, email = ?, name = ? WHERE id = ?`)
 	_, err := repo.db.Exec(query, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name, user.ID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errors.New("Codigo:505 Message:Server error") //Logica cambiada
+		}
+		return user, err
+	}
 
 	return user, err
 }

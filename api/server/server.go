@@ -4,7 +4,7 @@ import (
 	"bootcamp_api/api/endpoints"
 	"bootcamp_api/api/repository/mysql"
 	"bootcamp_api/api/services"
-	"bootcamp_api/api/transports/http"
+	adapters "bootcamp_api/api/transports/http"
 	"net/http"
 
 	_ "github.com/go-sql-driver/mysql"
