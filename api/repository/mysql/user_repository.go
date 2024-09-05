@@ -30,7 +30,7 @@ func (repo *MySqlUserRepository) GetUser(id string) (entities.User, error) {
 	err := repo.db.Get(&user, "SELECT * FROM users WHERE id=?", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errorss.ErrorUserNotFound //Logica cambiada
+			return user, errorss.ErrorUserNotFound
 		}
 		return user, err
 	}
@@ -43,12 +43,12 @@ func (repo *MySqlUserRepository) AddUser(user entities.User) (entities.User, err
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("Codigo:505 Message:Server error") //Logica cambiada
+			return user, errors.New("Codigo:505 Message:Server error")
 		}
 		return user, err
 	}
 	return user, err
-} //Ya devuelve el identificador en el endpoint
+}
 
 func (repo *MySqlUserRepository) UpdateUser(user entities.User) (entities.User, error) {
 	query := (`UPDATE users SET password = ?, age = ?, information = ?, parents = ?, email = ?, name = ? WHERE id = ?`)
@@ -56,7 +56,7 @@ func (repo *MySqlUserRepository) UpdateUser(user entities.User) (entities.User, 
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("Codigo:505 Message:Server error") //Logica cambiada
+			return user, errors.New("Codigo:505 Message:Server error")
 		}
 		return user, err
 	}

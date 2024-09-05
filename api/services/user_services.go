@@ -21,11 +21,11 @@ func NewUserService(repo mysql.UserRepository) *userService {
 	return &userService{repository: repo}
 }
 
-func (s *userService) GetUser(id string) (entities.User, error) { // reemplazar el model.user duplicando la struct
+func (s *userService) GetUser(id string) (entities.User, error) {
 	return s.repository.GetUser(id)
 }
 
-func (s *userService) AddUser(user entities.User) (entities.User, error) { // reemplazar el model.user duplicando la struct
+func (s *userService) AddUser(user entities.User) (entities.User, error) {
 
 	user.ID = uuid.NewString()
 	return s.repository.AddUser(user)

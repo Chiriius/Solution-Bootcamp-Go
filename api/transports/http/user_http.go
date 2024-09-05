@@ -47,12 +47,6 @@ func decodeModifyRequest(_ context.Context, r *http.Request) (interface{}, error
 }
 func encodeGenericResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 
-	// var req endpoints.GetUserResponse
-	// if req != response {
-	// 	return errors.New("Diferent type")
-	// }
-	//Agregar codigo de respuesta
-	//Agregar validaciones
 	return json.NewEncoder(w).Encode(response)
 
 }

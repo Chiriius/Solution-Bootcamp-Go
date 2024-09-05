@@ -14,16 +14,14 @@ import (
 func TestGetUserById(t *testing.T) {
 	testScenarios := []struct {
 		testName       string
-		mock           *sqlmock.Sqlmock
 		mockResponse   entities.User
 		mockError      error
-		configureMock  func(*sqlmock.Sqlmock)
+		configureMock  func(sqlmock.Sqlmock)
 		expectedOutput entities.User
 		expectedError  error
 	}{
 		{
 			testName: "TestGetUser",
-			mock:     nil,
 			mockResponse: entities.User{
 				ID:          "1",
 				Name:        "Sebas",
@@ -34,10 +32,10 @@ func TestGetUserById(t *testing.T) {
 				Parents:     "sds",
 			},
 			mockError: nil,
-			configureMock: func(m *sqlmock.Sqlmock) {
+			configureMock: func(m sqlmock.Sqlmock) {
 				rows := sqlmock.NewRows([]string{"id", "name", "email", "password", "age", "information", "parents"}).
 					AddRow("1", "Sebas", "sebas@gmail.com", "sds", "34", "asda", "sds")
-				(*m).ExpectQuery(`SELECT \* FROM users WHERE id=\?`).
+				(m).ExpectQuery(`SELECT \* FROM users WHERE id=\?`).
 					WithArgs("1").
 					WillReturnRows(rows)
 			},
@@ -54,11 +52,10 @@ func TestGetUserById(t *testing.T) {
 		},
 		{
 			testName:     "TestGetUser with error",
-			mock:         nil,
 			mockResponse: entities.User{},
 			mockError:    errorss.ErrorUserNotFound,
-			configureMock: func(m *sqlmock.Sqlmock) {
-				(*m).ExpectQuery(`SELECT \* FROM users WHERE id=\?`).
+			configureMock: func(m sqlmock.Sqlmock) {
+				(m).ExpectQuery(`SELECT \* FROM users WHERE id=\?`).
 					WithArgs("1").
 					WillReturnError(sql.ErrNoRows)
 			},
@@ -78,7 +75,7 @@ func TestGetUserById(t *testing.T) {
 			repo := NewMySQLUserRepository(sqlxDB)
 
 			if tt.configureMock != nil {
-				tt.configureMock(&mock)
+				tt.configureMock(mock)
 			}
 
 			// Act
@@ -221,30 +218,11 @@ func TestUpdateUser(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-
-		// 	testName: "TestUpdateUser with error",
-		// 	mockResponse: entities.User{
-		// 		ID:          "1",
-		// 		Name:        "Sebas",
-		// 		Email:       "sebas@gmail.com",
-		// 		Password:    "sds",
-		// 		Age:         "34",
-		// 		Information: "asda",
-		// 		Parents:     "sds",
-		// 	},
-		// 	mockError: errors.New("Codigo:505 Message:Server error"),
-		// 	configureMock: func(m sqlmock.Sqlmock) {
-		// 		m.ExpectExec(`^UPDATE users SET password = \?, age = \?, information = \?, parents = \?, email = \?, name = \? WHERE id = \?$`).
-		// 			WithArgs("sds", "34", "asda", "sds", "sebas@gmail.com", "Sebas", "1").
-		// 			WillReturnError(errors.New("Codigo:505 Message:Server error"))
-		// 	},
-		// 	expectedOutput: entities.User{},
-		// 	expectedError:  errors.New("Codigo:505 Message:Server error"),
-		// },
 	}
 
 	for _, tt := range testScenarios {
 		t.Run(tt.testName, func(t *testing.T) {
+
 			// Prepare
 			db, mock, err := sqlmock.New()
 			assert.NoError(t, err)
