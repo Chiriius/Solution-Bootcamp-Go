@@ -77,7 +77,7 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 			log.Println(err.Error())
 			return GetUserResponse{}, err
 		}
-		log.Printf("Obtained user: %s sucessfully", req.ID)
+		log.Printf("Obtained user in endpoint: %s sucessfully", req.ID)
 		return GetUserResponse{User: user}, nil
 
 	}

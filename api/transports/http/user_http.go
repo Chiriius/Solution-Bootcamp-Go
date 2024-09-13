@@ -4,6 +4,7 @@ import (
 	"bootcamp_api/api/endpoints"
 	"context"
 	"encoding/json"
+	"log"
 
 	"net/http"
 
@@ -37,6 +38,7 @@ func decodeGerUserRequest(_ context.Context, r *http.Request) (interface{}, erro
 		return nil, err
 	}
 	req.ID = r.FormValue("id")
+
 	return req, nil
 }
 
@@ -46,7 +48,7 @@ func decodeModifyRequest(_ context.Context, r *http.Request) (interface{}, error
 	return req, err
 }
 func encodeGenericResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-
+	log.Println("User with Http:", response)
 	return json.NewEncoder(w).Encode(response)
 
 }

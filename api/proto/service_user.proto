@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package pb;
+
+import "rpc_create_user.proto";
+import "user.proto";
+
+option go_package= "api/transports/grpc/pb";
+
+
+service UserService {
+    rpc GetUser (GetUserRequest) returns (GetUserResponse);
+    rpc AddUser (CreateUserRequest) returns (CreateUserResponse);
+  }
