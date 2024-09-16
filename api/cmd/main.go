@@ -6,12 +6,13 @@ import (
 )
 
 func main() {
-    srv, err := server.New()
-    if err != nil {
-        log.Fatalf("Failed to create server: %v", err)
-    }
+	server, err := server.New(":8080", ":50051")
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
+	defer server.Close()
 
-    //Mostrar los logs con el error y la capa en donde ocurrio
-    log.Println("Listening on :8080...")
-    log.Fatal(srv.Start(":8080"))
+	if err := server.Start(); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

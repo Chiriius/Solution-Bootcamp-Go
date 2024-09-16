@@ -1,9 +1,10 @@
 package endpoints
 
 import (
-	"bootcamp_api/api/models"
+	"bootcamp_api/api/entities"
 	"bootcamp_api/api/services"
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/go-kit/kit/endpoint"
@@ -18,25 +19,40 @@ func TestGetUser(t *testing.T) {
 		endpoint        func(services.UserService) endpoint.Endpoint
 		service         services.UserService
 		mock            *serviceMock
-		configureMock   func(*serviceMock, models.User)
+		configureMock   func(*serviceMock, entities.User, error)
 		endpointRequest interface{}
-		mockResponse    models.User
+		mockResponse    entities.User
+		mockError       error
 		expectedOutput  GetUserResponse
 		expetedError    error
 	}{
 		{
 			testName: "test  get user",
 			mock:     &serviceMock{},
-			mockResponse: models.User{
+			mockResponse: entities.User{
 				ID: "3",
 			},
-			configureMock: func(m *serviceMock, mockResponse models.User) {
-				m.On("GetUser", mock.Anything).Return(mockResponse, nil)
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("GetUser", mock.Anything).Return(mockResponse, mockError)
 			},
-			expectedOutput: GetUserResponse{User: models.User{
+			expectedOutput: GetUserResponse{User: entities.User{
 				ID: "3",
 			}},
 			expetedError:    nil,
+			endpointRequest: GetUserRequest{ID: "3"},
+		},
+		{
+			testName: "test  get user with error",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID: "3",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("GetUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  GetUserResponse{},
+			mockError:       errors.New("Service error"),
+			expetedError:    errors.New("Service error"),
 			endpointRequest: GetUserRequest{ID: "3"},
 		},
 	}
@@ -46,11 +62,9 @@ func TestGetUser(t *testing.T) {
 			// Prepare
 			tt.endpoint = MakeGetUserEndpoint
 			if tt.configureMock != nil {
-				tt.configureMock(tt.mock, tt.mockResponse)
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
 			}
 			ctx := context.TODO()
-
-			//Nothing to prepare in this case
 
 			// Act
 			result, err := tt.endpoint(tt.mock)(ctx, tt.endpointRequest)
@@ -61,4 +75,179 @@ func TestGetUser(t *testing.T) {
 		})
 	}
 
+}
+
+func TestAddUser(t *testing.T) {
+
+	testScenarios := []struct {
+		testName        string
+		endpoint        func(services.UserService) endpoint.Endpoint
+		service         services.UserService
+		mock            *serviceMock
+		mockError       error
+		configureMock   func(*serviceMock, entities.User, error)
+		endpointRequest interface{}
+		mockResponse    entities.User
+		expectedOutput  CreateUserResponse
+		expectedError   error
+	}{
+		{
+			testName: "test add user",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID: "5",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput: CreateUserResponse{
+				Id: "5",
+			},
+			expectedError:   nil,
+			endpointRequest: CreateUserRequest{Password: "12345678", Age: "20", Information: "add", Parents: "idk", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
+		},
+		{
+			testName: "test add user with error",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID: "5",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  CreateUserResponse{},
+			mockError:       errors.New("Server Error"),
+			expectedError:   errors.New("Server Error"),
+			endpointRequest: CreateUserRequest{Password: "12345678", Age: "20", Information: "add", Parents: "idk", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
+		},
+		// {
+		// 	testName:        "test add user with wrong request type",
+		// 	mock:            &serviceMock{},
+		// 	configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+		// 		m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+		// 	},
+		// 	expectedOutput:  CreateUserResponse{},
+		// 	mockError:       errorss.ErrorInterfaceDifType,
+		// 	expectedError:   errorss.ErrorInterfaceDifType,
+		// 	endpointRequest: "invalid request",
+		// },
+		{
+			testName:     "test add user with missing fields",
+			mock:         &serviceMock{},
+			mockResponse: entities.User{},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("AddUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  CreateUserResponse{},
+			mockError:       errors.New("some validation error"),
+			expectedError:   errors.New("some validation error"),
+			endpointRequest: CreateUserRequest{Password: "", Age: "", Information: "", Parents: "", Email: "", Name: ""},
+		},
+	}
+
+	for _, tt := range testScenarios {
+		t.Run(tt.testName, func(t *testing.T) {
+
+			// Prepare
+			tt.endpoint = MakeAddUserEndpoint
+			if tt.configureMock != nil {
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
+			}
+			ctx := context.TODO()
+
+			// Act
+			result, err := tt.endpoint(tt.mock)(ctx, tt.endpointRequest)
+
+			// Assert
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedOutput, result)
+		})
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+
+	testScenarios := []struct {
+		testName        string
+		service         services.UserService
+		endpoint        func(services.UserService) endpoint.Endpoint
+		mock            *serviceMock
+		mockError       error
+		mockResponse    entities.User
+		configureMock   func(*serviceMock, entities.User, error)
+		expectedOutput  ModifyUserResponse
+		expectedError   error
+		endpointRequest interface{}
+	}{
+		{
+			testName: "test modify user",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID: "222",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("GetUser", mock.Anything).Return(mockResponse, mockError)
+				m.On("UpdateUser", mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput: ModifyUserResponse{
+				Id: "222",
+			},
+			expectedError:   nil,
+			endpointRequest: ModifyUserRequest{Id: "222", Password: "12345678", Age: "20", Information: "add", Parents: "idk", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
+		},
+	}
+
+	for _, tt := range testScenarios {
+		t.Run(tt.testName, func(t *testing.T) {
+
+			// Prepare
+			tt.endpoint = MakeUpdateUserEndpoint
+			if tt.configureMock != nil {
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
+			}
+
+			// Act
+			ctx := context.TODO()
+			result, err := tt.endpoint(tt.mock)(ctx, tt.endpointRequest)
+
+			// Assert
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedOutput, result)
+		})
+	}
+}
+
+func TestMakeServerEndpoints(t *testing.T) {
+
+	sm := &serviceMock{}
+	testScenarios := []struct {
+		testName       string
+		mock           *serviceMock
+		expectedOutput Endpoints
+	}{
+		{
+			testName: "test MakeServerEndpoints",
+			mock:     sm,
+			expectedOutput: Endpoints{
+				GetUser:    MakeGetUserEndpoint(sm),
+				AddUser:    MakeAddUserEndpoint(sm),
+				UpdateUser: MakeUpdateUserEndpoint(sm),
+			},
+		},
+	}
+
+	for _, tt := range testScenarios {
+
+		// Prepare
+		t.Run(tt.testName, func(t *testing.T) {
+
+			// Act
+			result := MakeServerEndpoints(tt.mock)
+
+			// Assert
+			assert.NotNil(t, result.AddUser)
+			assert.NotNil(t, result.GetUser)
+			assert.NotNil(t, result.UpdateUser)
+		})
+	}
 }

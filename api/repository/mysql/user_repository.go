@@ -1,8 +1,10 @@
 package mysql
 
 import (
-	"bootcamp_api/api/models"
-	"bootcamp_api/api/utils/errors"
+	"bootcamp_api/api/entities"
+	errorss "bootcamp_api/api/utils/errors"
+	"errors"
+
 	"database/sql"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,8 +12,9 @@ import (
 )
 
 type UserRepository interface {
-	GetUserById(id string) (models.User, error)
-	AddUser(user models.User) error
+	GetUser(id string) (entities.User, error)
+	AddUser(user entities.User) (entities.User, error)
+	UpdateUser(user entities.User) (entities.User, error)
 }
 
 type MySqlUserRepository struct {
@@ -22,19 +25,41 @@ func NewMySQLUserRepository(db *sqlx.DB) *MySqlUserRepository {
 	return &MySqlUserRepository{db: db}
 }
 
-func (repo *MySqlUserRepository) GetUserById(id string) (models.User, error) {
-	var user models.User
+func (repo *MySqlUserRepository) GetUser(id string) (entities.User, error) {
+	var user entities.User
 	err := repo.db.Get(&user, "SELECT * FROM users WHERE id=?", id)
-	if err == sql.ErrNoRows {
-		return user, errors.ErrorUserNotFound  //Mejorar esta parte de logica de condicion.
-	} else if err != nil {
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errorss.ErrorUserNotFound
+		}
 		return user, err
 	}
 	return user, nil
 }
 
-func (repo *MySqlUserRepository) AddUser(user models.User) error {
+func (repo *MySqlUserRepository) AddUser(user entities.User) (entities.User, error) {
 	query := "INSERT INTO users (id, password, age, information, parents, email , name ) VALUES( ?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.db.Exec(query, user.ID, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name)
-	return err
-}  //Devolver El identificador
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errors.New("Codigo:505 Message:Server error")
+		}
+		return user, err
+	}
+	return user, err
+}
+
+func (repo *MySqlUserRepository) UpdateUser(user entities.User) (entities.User, error) {
+	query := (`UPDATE users SET password = ?, age = ?, information = ?, parents = ?, email = ?, name = ? WHERE id = ?`)
+	_, err := repo.db.Exec(query, user.Password, user.Age, user.Information, user.Parents, user.Email, user.Name, user.ID)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, errors.New("Codigo:505 Message:Server error")
+		}
+		return user, err
+	}
+
+	return user, err
+}
