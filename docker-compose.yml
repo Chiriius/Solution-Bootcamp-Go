@@ -1,9 +1,33 @@
 
 services:
   apibootcamp:
-    image: apibootcamp
+    image: bootcampgo:1.0
+    container_name: apibootcamp
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
       - 8080:8080
+
+    networks:
+      - bootcamp
+
+  dbgo:
+    image: mysql:8.0.39-oracle
+    container_name: dbgo
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345678
+      MYSQL_DATABASE: bootcampgo
+    ports:
+      - 3306:3306
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - bootcamp
+
+volumes:
+  db_data:
+
+networks:
+  bootcamp:
+    driver: bridge

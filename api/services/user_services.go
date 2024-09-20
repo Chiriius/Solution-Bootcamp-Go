@@ -5,6 +5,7 @@ import (
 	"bootcamp_api/api/repository/mysql"
 
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 type UserService interface {
@@ -15,10 +16,14 @@ type UserService interface {
 
 type userService struct {
 	repository mysql.UserRepository
+	logger     logrus.FieldLogger
 }
 
-func NewUserService(repo mysql.UserRepository) *userService {
-	return &userService{repository: repo}
+func NewUserService(repo mysql.UserRepository, logger logrus.FieldLogger) *userService {
+	return &userService{
+		repository: repo,
+		logger:     logger,
+	}
 }
 
 func (s *userService) GetUser(id string) (entities.User, error) {
@@ -28,6 +33,7 @@ func (s *userService) GetUser(id string) (entities.User, error) {
 func (s *userService) AddUser(user entities.User) (entities.User, error) {
 
 	user.ID = uuid.NewString()
+
 	return s.repository.AddUser(user)
 }
 

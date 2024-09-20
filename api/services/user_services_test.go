@@ -179,7 +179,7 @@ func TestNewUserService(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 
 			// Act
-			result := NewUserService(tt.mockRepo)
+			result := NewUserService(tt.mockRepo, nil)
 
 			// Assert
 			assert.NotNil(t, result)

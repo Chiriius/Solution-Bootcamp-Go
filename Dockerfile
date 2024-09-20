@@ -1,15 +1,34 @@
-#build stage
-FROM golang:1.16-alpine3.13 AS builder
+# Build stage
+FROM golang:1.22.5-alpine AS builder
+
 WORKDIR /go/src/app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
+
 RUN go build -o /go/bin/app ./api/cmd/main.go
 
+# Final stage
+FROM alpine:3.13
 
-#final stage
-FROM alpine3.13
-WORKDIR app/
-COPY --from=builder /app/main.go .
-EXPOSE  8080
+RUN apk add --no-cache bash
 
-CMD ["app/main"]
+WORKDIR /app
 
+COPY --from=builder /go/bin/app /app
+COPY --from=builder /go/src/app/.env /app/.env 
+COPY wait-for-it.sh /usr/local/bin/  
+RUN chmod +x /usr/local/bin/wait-for-it.sh  # Asegúrate de que sea ejecutable
+
+RUN echo "probando"
+RUN cat /app/.env
+RUN echo "termine"
+
+RUN chmod 777 /app/.env
+RUN chmod +x /app/app
+
+EXPOSE 8080
+
+CMD ["wait-for-it.sh", "dbgo:3306", "--", "./app"]

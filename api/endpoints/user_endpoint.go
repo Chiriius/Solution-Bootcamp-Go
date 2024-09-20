@@ -7,9 +7,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/go-kit/kit/endpoint"
+	"github.com/sirupsen/logrus"
 )
 
 type GetUserRequest struct {
@@ -54,6 +54,7 @@ type Endpoints struct {
 	GetUser    endpoint.Endpoint
 	AddUser    endpoint.Endpoint
 	UpdateUser endpoint.Endpoint
+	logger     logrus.FieldLogger
 }
 
 func MakeServerEndpoints(s services.UserService) Endpoints {
@@ -69,15 +70,15 @@ func MakeGetUserEndpoint(s services.UserService) endpoint.Endpoint {
 		var req GetUserRequest
 		var ok bool = false
 		if req, ok = request.(GetUserRequest); !ok {
-			log.Printf(errorss.ErrorInterfaceDifType.Message)
+			//.Errorln(`Layer:user_endpoint Method:MakeGetUser,`, err)
 			return nil, errorss.ErrorInterfaceDifType
 		}
 		user, err := s.GetUser(req.ID)
 		if err != nil {
-			log.Println(err.Error())
+			//l.Errorln(`Layer:user_endpoint Method:MakeGetUser,`, err)
 			return GetUserResponse{}, err
 		}
-		log.Printf("Obtained user in endpoint: %s sucessfully", req.ID)
+		//l.Infoln(`Layer:user_endpoint Method:MakeGetUser, user:`, user)
 		return GetUserResponse{User: user}, nil
 
 	}
@@ -117,12 +118,14 @@ func MakeUpdateUserEndpoint(s services.UserService) endpoint.Endpoint {
 			log.Println(errorss.ErrorInterfaceDifType)
 			return nil, errorss.ErrorInterfaceDifType
 		}
+
 		userG, err := s.GetUser(req.Id)
 		fmt.Println(userG)
 		if err != nil {
 			log.Println(err.Error())
 			return ModifyUserResponse{}, err
 		}
+
 		user := entities.User{
 			ID:          req.Id,
 			Password:    req.Password,
@@ -132,21 +135,7 @@ func MakeUpdateUserEndpoint(s services.UserService) endpoint.Endpoint {
 			Email:       req.Email,
 			Name:        req.Name,
 		}
-		switch {
-		case strings.TrimSpace(user.Password) == "":
-			user.Password = userG.Password
-		case strings.TrimSpace(user.Age) == "":
-			user.Age = userG.Age
-		case strings.TrimSpace(user.Information) == "":
-			user.Information = userG.Information
-		case strings.TrimSpace(user.Parents) == "":
-			user.Parents = userG.Parents
-		case strings.TrimSpace(user.Email) == "":
-			user.Email = userG.Email
-		case strings.TrimSpace(user.Name) == "":
-			user.Name = userG.Name
-		}
-		fmt.Println(user)
+
 		serviceUser, err := s.UpdateUser(user)
 		if err != nil {
 			log.Println(err)

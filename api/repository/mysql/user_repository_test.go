@@ -72,7 +72,7 @@ func TestGetUserById(t *testing.T) {
 			assert.NoError(t, err)
 			defer db.Close()
 			sqlxDB := sqlx.NewDb(db, "mysql")
-			repo := NewMySQLUserRepository(sqlxDB)
+			repo := NewMySQLUserRepository(sqlxDB, nil)
 
 			if tt.configureMock != nil {
 				tt.configureMock(mock)
@@ -165,7 +165,7 @@ func TestAddUser(t *testing.T) {
 			assert.NoError(t, err)
 			defer db.Close()
 			sqlxDB := sqlx.NewDb(db, "mysql")
-			repo := NewMySQLUserRepository(sqlxDB)
+			repo := NewMySQLUserRepository(sqlxDB, nil)
 
 			if tt.configureMock != nil {
 				tt.configureMock(mock)
@@ -228,7 +228,7 @@ func TestUpdateUser(t *testing.T) {
 			assert.NoError(t, err)
 			defer db.Close()
 			sqlxDB := sqlx.NewDb(db, "mysql")
-			repo := NewMySQLUserRepository(sqlxDB)
+			repo := NewMySQLUserRepository(sqlxDB, nil)
 
 			if tt.configureMock != nil {
 				tt.configureMock(mock)

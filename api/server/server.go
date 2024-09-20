@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
@@ -23,16 +24,19 @@ type Server struct {
 	grpcSrv  *grpc.Server
 	grpcAddr string
 	httpAddr string
+	logger   logrus.FieldLogger
 }
 
-func New(httpAddr, grpcAddr string) (*Server, error) {
-	db, err := sqlx.Connect("mysql", "root:12345678@tcp(127.0.0.1:3306)/bootcampgo")
+func New(logger logrus.FieldLogger, httpAddr, grpcAddr, dbUrl string) (*Server, error) {
+
+	db, err := sqlx.Connect("mysql", dbUrl)
 	if err != nil {
+		logger.Panic("Layer:Server, Error al conectar la db:", err, " esta es la url:", dbUrl)
 		return nil, err
 	}
 
-	userRepository := mysql.NewMySQLUserRepository(db)
-	userService := services.NewUserService(userRepository)
+	userRepository := mysql.NewMySQLUserRepository(db, logger)
+	userService := services.NewUserService(userRepository, logger)
 	userEndpoints := endpoints.MakeServerEndpoints(userService)
 	httpHandler := adapters.NewHTTPHandler(userEndpoints)
 	grpcServerr := adapter.NewGRPCServer(userEndpoints)
